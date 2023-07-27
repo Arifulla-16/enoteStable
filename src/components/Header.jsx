@@ -105,11 +105,11 @@ function Header(props) {
         <span className="toggleView" onClick={toggleView}>
           <i className={`fa-solid fa-grip${props.view==="grid"?"":"-lines"} fa-xl ${props.isMobile===true?"hide":""} `} ></i>
         </span>
-        <span className="profile">
+        {/* <span className="profile">
           <span className='circler'>
             <i className="fa-regular fa-user fa-xl"></i>
           </span>
-        </span>
+        </span> */}
     </div>
   )
 }

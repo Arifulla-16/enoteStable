@@ -316,7 +316,7 @@ const displayPalette = (e) =>{
             <i className="fa-solid fa-tags curs add" onClick={showList}></i>
           </span>
           <div className="newList">
-            <span className=" curs blacken " onClick={focusOut}>close</span>
+            <span className=" curs blacken " onClick={focusOut}>Add</span>
           </div>
         </span>
       </div>

@@ -1,9 +1,13 @@
 import React, { useState } from 'react'
+import toast, { Toaster } from 'react-hot-toast';
+
 
 function Note(props) {
     var {view,note,tagRemover,noteRemover,checkUpdate,setTargetNote,updatePin,psy,noteArchive,imgAdd,tp,del,res,getEditNote} = props;
     var {id,title,text,list,checkList,tags,images,bgImage,bgColor,pinned} = note;
 
+    const errToast = (msg) => toast.error(msg);
+    const sucToast = (msg) => toast.success(msg);
 
     const delTag = (el) => {
         var tg = el.currentTarget.getAttribute("tg");
@@ -14,26 +18,38 @@ function Note(props) {
     const delNote = (el) => {
         var tarId = el.currentTarget.getAttribute("uid");
         noteRemover(tarId);
+        sucToast(`Moved to trash`);
     }
 
     const archiveNote = (el)=>{
         var tarId = el.currentTarget.getAttribute("uid");
         noteArchive(tarId,!note.archived);
+        note.archived && sucToast(`Note Archieved`);
+        !note.archived && sucToast(`Note Un Archieved`);
     }
 
     const restore = (el)=>{
         var tarId = el.currentTarget.getAttribute("uid");
         res(tarId);
+        sucToast("Note restored!!");
     }
 
     const deleteForever = (el)=>{
         var tarId = el.currentTarget.getAttribute("uid");
-        del(tarId);
+        toast((t) => (
+            <span style={{display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center"}}>
+                <a style={{color:'black'}}>Are you <b>sure!!!</b></a>
+                <div style={{display:"flex",columnGap:"5px"}}>
+                    <button style={{backgroundColor:"rgb(233, 85, 85)",borderStyle:"none"}} onClick={() => {del(tarId);toast.dismiss(t.id);}}>Yes</button>
+                    <button style={{backgroundColor:"rgb(58, 181, 58)",borderStyle:"none"}} onClick={() => {toast.dismiss(t.id);}}>No</button>
+                </div>
+            </span>
+          ),{position: "top-center"});
     }
 
     const handleCheck = (e) =>{
         if(tp=="trash"){
-            alert("restore to edit");/////////////////////////
+            errToast("restore to edit");
             e.preventDefault();
         }
         else{

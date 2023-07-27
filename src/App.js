@@ -7,6 +7,7 @@ import Api from './components/Api';
 import Notelist from './components/Notes/Notelist';
 import Takenote from './components/Notes/Takenote';
 import { v4 as uuidv4 } from 'uuid';
+import toast, { Toaster } from 'react-hot-toast';
 
 function App() {
   var [noteList,setNoteList] = useState([]);
@@ -94,16 +95,21 @@ useEffect(() => {
 })
 
   useEffect(() => {
+    toast("Please wait till Database gets connected you will be notified once it is done!!",{
+      icon: '⏳',
+    });
     Api.get("/notes").then((response) => {
       setNoteList(response.data);
+      Api.get("/trash").then((response) => {
+        setTrashList(response.data);
+      });
+      Api.get("/tags").then((response)=>{
+        setAllTagList(response.data);
+        setFilteredList(response.data);
+      })
+    }).then(()=>{
+      sucToast("Database connected!");
     });
-    Api.get("/trash").then((response) => {
-      setTrashList(response.data);
-    });
-    Api.get("/tags").then((response)=>{
-      setAllTagList(response.data);
-      setFilteredList(response.data);
-    })
   }, [])
 
   const asyncHandler = async(nList,ids)=>{
@@ -145,6 +151,9 @@ useEffect(() => {
       setTrashList(list);
     });
   }
+
+  const errToast = (msg) => toast.error(msg);
+  const sucToast = (msg) => toast.success(msg);
 
   const navToggler = (e)=>{
     var nav = document.getElementsByClassName("nav");
@@ -208,6 +217,7 @@ useEffect(() => {
     .then(()=>{
       setAllTagList(newList);
       setFilteredList(newList);
+      sucToast(`Deleted tag ${tarTg}`);
     })
     e.stopPropagation();
   }
@@ -245,6 +255,8 @@ useEffect(() => {
     var pen = document.getElementById(`${tarTg}NavELablesItemPen`);
     
     if(allTagList.indexOf(editVal.current)==-1 && editVal.current!==""){
+      var pr = prevName.innerText;
+      var no = editVal.current;
       replaceNoteListLabels(editVal.current,prevName.innerText);
       var newTagList=allTagList;
       newTagList.splice(newTagList.indexOf(prevName.innerText),1,editVal.current);
@@ -252,11 +264,12 @@ useEffect(() => {
       Api.put("/tags",newTagList).then((response)=>{
         setAllTagList(newTagList)
         setFilteredList(newTagList)
+        sucToast(`${pr} replaced with ${no}`);
       })
       editVal.current=""
     }
     else if(editVal.current!==""){
-      alert("tag Already exists");
+      errToast("tag Already exists");
     }
     prevName.style.display="inline";
     box.value="";
@@ -276,22 +289,25 @@ useEffect(() => {
     .then(()=>{
       setAllTagList(nList);
       setFilteredList(fl);
+      sucToast(`Created tag ${tId.current.value}`);
     })
     setAddDisplay("none");
   }
 
   const addNewLabel = (e)=>{
     if(allTagList.indexOf(editVal.current)==-1 && editVal.current!==""){
+      var tg = editVal.current;
       var nList=allTagList.slice();
       nList.push(editVal.current);
       Api.put("/tags",nList)
     .then(()=>{
       setAllTagList(nList);
       setFilteredList(nList);
+      sucToast(`"${tg}" tag created`);
     })
     }
     else if(editVal.current!==""){
-      alert("tag Already exists");
+      errToast("tag already exists");
     }
     document.getElementById("labelAdd").value="";
     editVal.current=""
@@ -372,6 +388,7 @@ useEffect(() => {
     upList.push(note);
     Api.post("/notes",note,{headers: {'Content-Type': 'application/json; charset=UTF-8',"Access-Control-Allow-Origin": "*"}}).then(()=>{
       setNoteList(upList)
+      sucToast("Note Created Sucessfully!! ");
     });
   }
 
@@ -626,7 +643,7 @@ useEffect(() => {
               })
             }
           </span>
-          <span className="editLabelsListAdd" id="editLabelsListAdd" style={{display:addDisplay}} onClick={createLabel}>
+          <span className="editLabelsListAdd" id="editLabelsListAdd" style={{display:addDisplay,cursor:'pointer'}} onClick={createLabel}>
               {
                 `+ Create "${tId.current.value}"`
               }
@@ -656,6 +673,10 @@ useEffect(() => {
           </span>
         </span>
       <Header isMobile={isMobile} navToggler={navToggler} getView={getView} noteList={noteList} setFList={setFList} view={view}/>
+      <Toaster
+        position="bottom-center"
+        reverseOrder={false}
+      />
       <span className="content" id="content">
         <Nav navMode={navMode} allTagList={allTagList}  />
         <span className={`nonNav nonNavToggleClass${navMode} `}>
